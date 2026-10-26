@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏫 Campus Smart Lost & Found System
 
 A secure, web-based Lost and Found management system designed for universities and colleges. Built with **Python Flask**, **MySQL**, **Bootstrap 5**, and a **Python-based Smart Similarity Matching Engine**.
@@ -180,3 +181,6 @@ campus_lost_and_found/
 - **MySQL Connection Refused**:
   - Check if the Windows service `MySQL267` is running (`services.msc`).
   - If stopped and you don't have Admin privileges to start it, the application will automatically fall back to SQLite without crashing.
+=======
+# my-college-project.
+>>>>>>> fbd6a521cba32c09ab772c71e242a3fd7009baab
