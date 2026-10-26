@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost or Found Item - Campus Smart Lost & Found{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-custom border-0 shadow-lg p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-dark">Report Campus Property</h3>
+                    <p class="text-muted small">Provide clear details to help our Python Smart Matcher identify matches quickly</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('report_item') }}" enctype="multipart/form-data">
+                    <!-- Segmented Item Type Selector -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary small d-block">Report Classification *</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="item_type" id="typeLost" value="lost" {% if default_type != 'found' %}checked{% endif %} onchange="handleTypeChange('lost')">
+                                <label class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold d-flex flex-column align-items-center gap-1" for="typeLost">
+                                    <i class="bi bi-search-heart fs-3"></i>
+                                    <span>I LOST AN ITEM</span>
+                                    <small class="fw-normal text-muted" style="font-size:0.75rem;">I am searching for my missing item</small>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="item_type" id="typeFound" value="found" {% if default_type == 'found' %}checked{% endif %} onchange="handleTypeChange('found')">
+                                <label class="btn btn-outline-success w-100 py-3 rounded-4 fw-bold d-flex flex-column align-items-center gap-1" for="typeFound">
+                                    <i class="bi bi-box-seam fs-3"></i>
+                                    <span>I FOUND AN ITEM</span>
+                                    <small class="fw-normal text-muted" style="font-size:0.75rem;">I want to return it to the owner</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Item Title -->
+                        <div class="col-md-8">
+                            <label for="title" class="form-label fw-semibold small text-secondary">Item Title / Name *</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Casio Scientific Calculator, Black Dell Laptop Bag" required>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-md-4">
+                            <label for="category_id" class="form-label fw-semibold small text-secondary">Category *</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="" disabled selected>Select category...</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Campus Location -->
+                        <div class="col-md-7">
+                            <label for="location" class="form-label fw-semibold small text-secondary">Campus Location *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" class="form-control" id="location" name="location" placeholder="e.g. Central Library 2nd Floor, Food Court, Block B 104" required>
+                            </div>
+                        </div>
+
+                        <!-- Event Date -->
+                        <div class="col-md-5">
+                            <label for="eventDateInput" class="form-label fw-semibold small text-secondary">Date Lost / Found *</label>
+                            <input type="date" class="form-control" id="eventDateInput" name="event_date" required>
+                        </div>
+
+                        <!-- Brand and Color -->
+                        <div class="col-md-6">
+                            <label for="brand" class="form-label fw-semibold small text-secondary">Brand / Manufacturer (Optional)</label>
+                            <input type="text" class="form-control" id="brand" name="brand" placeholder="e.g. Apple, Casio, Dell, Fastrack, Nike">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="primary_color" class="form-label fw-semibold small text-secondary">Primary Color (Optional)</label>
+                            <input type="text" class="form-control" id="primary_color" name="primary_color" placeholder="e.g. Silver, Matte Black, Navy Blue, Red">
+                        </div>
+
+                        <!-- Storage / Custody Location (Shows when 'found' is selected) -->
+                        <div class="col-12 {% if default_type != 'found' %}d-none{% endif %}" id="storageLocationGroup">
+                            <div class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3">
+                                <label for="storage_location" class="form-label fw-bold small text-success">Current Custody / Safe Storage Location *</label>
+                                <input type="text" class="form-control border-success" id="storage_location" name="storage_location" placeholder="e.g. Deposited at Main Security Desk Gate 1, or With Finder in Room 204">
+                                <small class="text-muted d-block mt-1">Specify where this found item is currently kept so the rightful owner or admin can verify it.</small>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12">
+                            <label for="description" class="form-label fw-semibold small text-secondary">Detailed Description &amp; Unique Marks *</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe specific identifiers, scratches, stickers, keychains, lock status, or accessories to assist matching." required></textarea>
+                            <div class="form-text small">Public description visible in search and campus listings.</div>
+                        </div>
+
+                        <!-- Secret Ownership Verification (Kept 100% Private) -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light border border-secondary border-opacity-25 rounded-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-dark"><i class="bi bi-shield-lock-fill me-1"></i> Secret Ownership Verification</span>
+                                    <span class="badge bg-secondary bg-opacity-25 text-dark fw-normal small"><i class="bi bi-eye-slash-fill me-1"></i> Never Shown Publicly</span>
+                                </div>
+                                <label for="secret_details" class="form-label fw-semibold small text-secondary">
+                                    Secret Identifying Detail / Hidden Mark (Optional but Highly Recommended)
+                                </label>
+                                <textarea class="form-control" id="secret_details" name="secret_details" rows="2" placeholder="e.g. Small tear inside left pocket, blue cardholder inside, laptop serial ending in 492, lockscreen wallpaper is a cat, engraved initials 'RS' on bottom rim."></textarea>
+                                <div class="form-text small text-muted mt-1">
+                                    <i class="bi bi-shield-check text-primary"></i> <strong>Zero Exposure Guarantee:</strong> This information is stored securely on the server and is <strong>never displayed publicly</strong>. When another user submits an ownership claim, our system and Campus Security will privately compare their answer to this secret detail to prevent false claims.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload with Instant Preview -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Item Photograph (Optional but Recommended)</label>
+                            <div class="border rounded-4 p-3 text-center bg-light position-relative">
+                                <input type="file" class="form-control mb-2" id="imageUploadInput" name="image" accept="image/*">
+                                <div id="uploadPlaceholderBox" class="py-2 text-muted small">
+                                    <i class="bi bi-camera fs-3 d-block mb-1 text-primary"></i>
+                                    Upload a clear photograph (JPG, PNG, WEBP max 16MB)
+                                </div>
+                                <img id="imagePreviewTarget" src="#" alt="Preview" class="d-none img-fluid rounded-3 shadow-sm mx-auto" style="max-height: 220px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex gap-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary px-4 rounded-3">Cancel</a>
+                        <button type="submit" class="btn btn-primary flex-grow-1 py-2 rounded-3 shadow-sm fw-bold">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> Submit Report &amp; Run Smart Match
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function handleTypeChange(type) {
+    const storageGroup = document.getElementById('storageLocationGroup');
+    const storageInput = document.getElementById('storage_location');
+    if (type === 'found') {
+        storageGroup.classList.remove('d-none');
+        storageInput.setAttribute('required', 'required');
+    } else {
+        storageGroup.classList.add('d-none');
+        storageInput.removeAttribute('required');
+    }
+}
+// Init on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const checked = document.querySelector('input[name="item_type"]:checked');
+    if (checked) handleTypeChange(checked.value);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Smart Lost & Found - Fast, Secure Item Recovery{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section mb-5">
+    <div class="container position-relative">
+        <div class="row align-items-center justify-content-between g-5">
+            <div class="col-lg-7">
+                <span class="badge bg-primary bg-opacity-25 text-info px-3 py-2 rounded-pill fw-semibold mb-3 border border-primary border-opacity-50">
+                    <i class="bi bi-shield-check me-1"></i> Official Campus Portal
+                </span>
+                <h1 class="display-4 fw-extrabold text-white mb-3">
+                    Lost something on campus? <br>
+                    <span class="text-transparent bg-clip-text bg-gradient text-primary" style="background: linear-gradient(135deg, #818cf8, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        We help you find it.
+                    </span>
+                </h1>
+                <p class="lead text-light text-opacity-75 mb-4">
+                    The official campus lost &amp; found service for students, faculty, and staff. Report missing belongings, turn in found items, and track verified returns seamlessly.
+                </p>
+
+                <!-- Search Form in Hero -->
+                <form action="{{ url_for('browse') }}" method="GET" class="card p-2 rounded-4 shadow-lg border-0 bg-white mb-4">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12 col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-0 text-muted ps-3">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" name="q" class="form-control border-0 shadow-none ps-2" placeholder="Search laptop, keys, wallet, phone, card...">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <select name="category" class="form-select border-0 bg-light rounded-3 text-secondary">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <button type="submit" class="btn btn-primary w-100 rounded-3 text-nowrap fw-semibold">
+                                <i class="bi bi-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Action CTA Buttons -->
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('report_item', type='lost') }}" class="btn btn-danger px-4 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-search-heart"></i> I Lost an Item
+                    </a>
+                    <a href="{{ url_for('report_item', type='found') }}" class="btn btn-success px-4 py-2 rounded-3 shadow-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-box-seam"></i> I Found an Item
+                    </a>
+                    <a href="{{ url_for('browse') }}" class="btn btn-outline-light px-4 py-2 rounded-3">
+                        <i class="bi bi-grid me-1"></i> Browse All
+                    </a>
+                </div>
+            </div>
+
+            <!-- Campus Security Network Active Control Panel -->
+            <div class="col-lg-5 col-12 mt-4 mt-lg-0">
+                <div class="security-network-card p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="p-2 bg-primary bg-opacity-25 text-info rounded-circle shadow-sm">
+                                <i class="bi bi-shield-check fs-5"></i>
+                            </span>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">Campus Security Network</h6>
+                                <small class="text-light text-opacity-75">Live Property Custody &amp; Verification</small>
+                            </div>
+                        </div>
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1 d-inline-flex align-items-center gap-1 small">
+                            <span class="security-live-pulse"></span> Online &amp; Active
+                        </span>
+                    </div>
+
+                    <!-- Interactive Live Custody Check Tool -->
+                    <div class="mb-3 p-3 rounded-3" style="background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <label class="form-label small text-info fw-semibold mb-1 d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-upc-scan me-1"></i> Quick Custody &amp; Item Status Check</span>
+                            <span class="badge bg-primary bg-opacity-25 text-info" style="font-size: 0.68rem;">Live Database</span>
+                        </label>
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="text" id="securityQueryInput" class="form-control security-check-input text-white rounded-start-3" placeholder="Enter Item ID or keyword (e.g. 1, laptop)...">
+                            <button class="btn btn-primary px-3 rounded-end-3 text-nowrap fw-semibold" type="button" id="btnSecurityLookup">
+                                <i class="bi bi-shield-shaded me-1"></i> Check
+                            </button>
+                        </div>
+                        <div id="securityLookupResult" class="small mt-2 d-none"></div>
+                    </div>
+
+                    <!-- Security Desks & Protocol Overview -->
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        <div class="security-feature-item d-flex align-items-start gap-3">
+                            <span class="p-2 bg-info bg-opacity-20 text-info rounded-3 mt-1">
+                                <i class="bi bi-building-check fs-5"></i>
+                            </span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-bold text-white mb-0" style="font-size: 0.92rem;">Main Gate Security Custody</h6>
+                                    <span class="badge bg-dark border border-secondary text-info" style="font-size: 0.7rem;">Ext. 204</span>
+                                </div>
+                                <p class="small text-light text-opacity-75 mb-0" style="font-size: 0.8rem;">
+                                    Ground Floor, Main Gate 1 &bull; 24/7 Secured item intake and physical returns vault.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="security-feature-item d-flex align-items-start gap-3">
+                            <span class="p-2 bg-warning bg-opacity-20 text-warning rounded-3 mt-1">
+                                <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                            </span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="fw-bold text-white mb-0" style="font-size: 0.92rem;">Library Lost Property Counter</h6>
+                                    <span class="badge bg-dark border border-secondary text-warning" style="font-size: 0.7rem;">Ext. 118</span>
+                                </div>
+                                <p class="small text-light text-opacity-75 mb-0" style="font-size: 0.8rem;">
+                                    Central Library Circulation &bull; Books, student IDs, electronics, and cards.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Footer of the Card: Direct Hotline -->
+                    <div class="pt-2 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center small text-light text-opacity-75">
+                        <span><i class="bi bi-telephone-outbound text-warning me-1"></i> Security Intercom: <strong class="text-white">204</strong></span>
+                        <a href="{{ url_for('browse') }}" class="text-info text-decoration-none fw-semibold">
+                            Browse All Items <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- System Statistics Counters -->
+<div class="container mb-5">
+    <div class="row g-3">
+        <div class="col-6 col-lg-3">
+            <div class="stat-box">
+                <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ stats.total_items }}</h3>
+                    <span class="text-muted small">Total Reported Items</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-box">
+                <div class="stat-icon-wrapper bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-question-circle"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ stats.lost_items }}</h3>
+                    <span class="text-muted small">Active Lost Items</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-box">
+                <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ stats.returned_items }}</h3>
+                    <span class="text-muted small">Items Successfully Returned</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-box">
+                <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-percent"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-0">{{ stats.resolution_rate }}%</h3>
+                    <span class="text-muted small">Recovery Success Rate</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Browse by Category Grid -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Explore by Category</h4>
+            <p class="text-muted small mb-0">Browse campus items organized by classification</p>
+        </div>
+        <a href="{{ url_for('browse') }}" class="btn btn-outline-primary btn-sm rounded-pill">View All Items</a>
+    </div>
+
+    <div class="row row-cols-2 row-cols-md-4 row-cols-lg-7 g-3">
+        {% for cat in categories %}
+        <div class="col">
+            <a href="{{ url_for('browse', category=cat.id) }}" class="text-decoration-none">
+                <div class="card card-custom h-100 text-center p-3 hover-lift border-0">
+                    <div class="p-3 mx-auto rounded-circle bg-primary bg-opacity-10 text-primary mb-2" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
+                        <i class="bi {{ cat.icon }} fs-4"></i>
+                    </div>
+                    <span class="fw-semibold text-dark small">{{ cat.name }}</span>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Recent Lost & Found Items Deck -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <!-- Recent Lost Items Column -->
+        <div class="col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger rounded-circle p-2"></span>
+                    <h5 class="fw-bold mb-0">Recently Lost Items</h5>
+                </div>
+                <a href="{{ url_for('browse', type='lost') }}" class="small text-danger fw-semibold text-decoration-none">View All Lost &rarr;</a>
+            </div>
+
+            <div class="row g-3">
+                {% if recent_lost %}
+                    {% for item in recent_lost %}
+                    <div class="col-sm-6">
+                        <div class="card card-custom h-100">
+                            <div class="item-card-img-wrapper">
+                                <span class="item-badge-floating badge-lost">Lost</span>
+                                <img src="{{ url_for('static', filename='uploads/' + item.image_filename) }}" 
+                                     alt="{{ item.title }}" 
+                                     class="item-card-img"
+                                     onerror="this.src='{{ url_for('static', filename='uploads/default_item.svg') }}'">
+                            </div>
+                            <div class="card-body p-3 d-flex flex-column">
+                                <span class="badge bg-light text-secondary border align-self-start mb-2 small">
+                                    <i class="bi {{ item.category_icon }} me-1"></i>{{ item.category_name }}
+                                </span>
+                                <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ item.title }}">{{ item.title }}</h6>
+                                <p class="text-muted small mb-2 text-truncate-2" style="font-size: 0.85rem; height: 40px; overflow:hidden;">
+                                    {{ item.description }}
+                                </p>
+                                <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small text-muted">
+                                    <span><i class="bi bi-geo-alt me-1 text-danger"></i>{{ item.location }}</span>
+                                    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline-danger rounded-pill px-2 py-0">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="card card-custom p-4 text-center bg-white border-0 shadow-sm">
+                            <div class="mx-auto p-3 rounded-circle bg-light text-muted mb-2" style="width: 54px; height: 54px; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-inbox fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">No Active Lost Reports</h6>
+                            <p class="text-muted small mb-3">All reported missing belongings have been resolved or none are logged today.</p>
+                            <a href="{{ url_for('report_item', type='lost') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3 align-self-center">
+                                <i class="bi bi-plus-circle me-1"></i> Report Lost Item
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Found Items Column -->
+        <div class="col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success rounded-circle p-2"></span>
+                    <h5 class="fw-bold mb-0">Recently Found Items (Claimable)</h5>
+                </div>
+                <a href="{{ url_for('browse', type='found') }}" class="small text-success fw-semibold text-decoration-none">View All Found &rarr;</a>
+            </div>
+
+            <div class="row g-3">
+                {% if recent_found %}
+                    {% for item in recent_found %}
+                    <div class="col-sm-6">
+                        <div class="card card-custom h-100">
+                            <div class="item-card-img-wrapper">
+                                <span class="item-badge-floating badge-found">Found</span>
+                                <img src="{{ url_for('static', filename='uploads/' + item.image_filename) }}" 
+                                     alt="{{ item.title }}" 
+                                     class="item-card-img"
+                                     onerror="this.src='{{ url_for('static', filename='uploads/default_item.svg') }}'">
+                            </div>
+                            <div class="card-body p-3 d-flex flex-column">
+                                <span class="badge bg-light text-secondary border align-self-start mb-2 small">
+                                    <i class="bi {{ item.category_icon }} me-1"></i>{{ item.category_name }}
+                                </span>
+                                <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ item.title }}">{{ item.title }}</h6>
+                                <p class="text-muted small mb-2" style="font-size: 0.85rem; height: 40px; overflow:hidden;">
+                                    {{ item.description }}
+                                </p>
+                                <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small text-muted">
+                                    <span><i class="bi bi-geo-alt me-1 text-success"></i>{{ item.location }}</span>
+                                    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0">Claim</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="card card-custom p-4 text-center bg-white border-0 shadow-sm">
+                            <div class="mx-auto p-3 rounded-circle bg-light text-muted mb-2" style="width: 54px; height: 54px; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-box-seam fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">No Found Belongings in Custody</h6>
+                            <p class="text-muted small mb-3">Did you find an unattended item on campus? Deposit it to security or report it online.</p>
+                            <a href="{{ url_for('report_item', type='found') }}" class="btn btn-outline-success btn-sm rounded-pill px-3 align-self-center">
+                                <i class="bi bi-plus-circle me-1"></i> Report Found Item
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Section: How It Works -->
+<div class="container mb-5">
+    <div class="card card-custom p-4 p-md-5 border-0 bg-white">
+        <div class="text-center max-w-xl mx-auto mb-4">
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold mb-2">Campus Recovery Workflow</span>
+            <h3 class="fw-bold">How the Smart System Works</h3>
+            <p class="text-muted small">End-to-end security and automated matching from loss to verified return.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-3">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        1
+                    </div>
+                    <h5 class="fw-bold">1. Report with Photo &amp; Details</h5>
+                    <p class="text-muted small">
+                        Students report missing or found belongings with campus location, category, date, and distinguishing marks.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3">
+                    <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        2
+                    </div>
+                    <h5 class="fw-bold">2. Automated Property Matching</h5>
+                    <p class="text-muted small">
+                        The system automatically compares item attributes (category, location, date, and description) to help identify potential matching reports.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3">
+                    <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        3
+                    </div>
+                    <h5 class="fw-bold">3. Admin Verification &amp; Return</h5>
+                    <p class="text-muted small">
+                        Campus Security verifies identifying ownership proof, approves claim, and generates a tamper-evident digital return receipt.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnLookup = document.getElementById('btnSecurityLookup');
+    const inputQuery = document.getElementById('securityQueryInput');
+    const resultBox = document.getElementById('securityLookupResult');
+
+    if (btnLookup && inputQuery && resultBox) {
+        function performSecurityCheck() {
+            const q = inputQuery.value.trim();
+            if (!q) {
+                resultBox.className = 'small mt-2 p-2 rounded-2 bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25';
+                resultBox.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i> Please enter an Item ID or keyword.';
+                resultBox.classList.remove('d-none');
+                return;
+            }
+
+            resultBox.className = 'small mt-2 p-2 rounded-2 bg-info bg-opacity-20 text-info border border-info border-opacity-25';
+            resultBox.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Checking Campus Security Database...';
+            resultBox.classList.remove('d-none');
+
+            fetch('/api/security/check?q=' + encodeURIComponent(q))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.found) {
+                        const item = data.item;
+                        const statusBadge = item.status === 'returned' ? 'bg-success' : (item.status === 'claimed' ? 'bg-warning' : 'bg-primary');
+                        resultBox.className = 'small mt-2 p-2 rounded-3 bg-dark border border-secondary text-light';
+                        resultBox.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong class="text-white">${item.title} (#${item.id})</strong>
+                                <span class="badge ${statusBadge}">${item.status.toUpperCase()}</span>
+                            </div>
+                            <div class="text-light text-opacity-75 mb-1" style="font-size: 0.78rem;">
+                                <i class="bi bi-geo-alt text-danger me-1"></i> Location: ${item.location}
+                            </div>
+                            <div class="text-info mb-2" style="font-size: 0.78rem;">
+                                <i class="bi bi-shield-check me-1"></i> Custody: <strong>${item.storage_location}</strong>
+                            </div>
+                            <a href="${item.url}" class="btn btn-outline-info btn-sm py-0 px-2 fw-semibold" style="font-size: 0.75rem;">View Full Details &rarr;</a>
+                        `;
+                    } else {
+                        resultBox.className = 'small mt-2 p-2 rounded-3 bg-warning bg-opacity-15 text-warning border border-warning border-opacity-25';
+                        resultBox.innerHTML = `
+                            <i class="bi bi-info-circle me-1"></i> ${data.message || 'No item found.'}
+                            <div class="mt-1">
+                                <a href="/report?type=lost" class="text-warning text-decoration-underline fw-semibold">Report Lost Item</a> &bull; 
+                                <a href="/browse" class="text-info text-decoration-underline fw-semibold ms-1">Browse Items</a>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    resultBox.className = 'small mt-2 p-2 rounded-3 bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25';
+                    resultBox.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Unable to connect to security database. Please try again.';
+                });
+        }
+
+        btnLookup.addEventListener('click', performSecurityCheck);
+        inputQuery.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSecurityCheck();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

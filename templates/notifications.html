@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - Campus Smart Lost & Found{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1">Campus Notification Center</h3>
+                    <p class="text-muted small mb-0">Smart match alerts, claim updates, and verification announcements</p>
+                </div>
+                {% if notifications %}
+                <form action="{{ url_for('mark_all_read') }}" method="POST">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            {% if notifications %}
+            <div class="d-flex flex-column gap-3">
+                {% for notif in notifications %}
+                <div class="card card-custom p-3 border-0 shadow-sm {% if not notif.is_read %}bg-light border-start border-primary border-4{% else %}bg-white{% endif %}">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="p-2 rounded-circle {% if 'Match' in notif.title %}bg-info bg-opacity-10 text-info{% elif 'Approved' in notif.title %}bg-success bg-opacity-10 text-success{% else %}bg-primary bg-opacity-10 text-primary{% endif %} mt-1">
+                            <i class="bi {% if 'Match' in notif.title %}bi-cpu{% elif 'Approved' in notif.title %}bi-patch-check-fill{% else %}bi-bell{% endif %} fs-5"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold text-dark mb-0">{{ notif.title }}</h6>
+                                <span class="small text-muted" style="font-size: 0.75rem;">{{ notif.created_at }}</span>
+                            </div>
+                            <p class="text-muted small mb-2">{{ notif.message }}</p>
+
+                            <div class="d-flex align-items-center gap-2">
+                                {% if notif.link and notif.link != '#' %}
+                                <a href="{{ notif.link }}" class="btn btn-sm btn-primary rounded-pill px-3 py-0 small">
+                                    View Details &rarr;
+                                </a>
+                                {% endif %}
+
+                                {% if not notif.is_read %}
+                                <form action="{{ url_for('mark_one_read', notif_id=notif.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm btn-link text-muted p-0 text-decoration-none small">
+                                        Mark as read
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card card-custom p-5 text-center bg-white border-0">
+                <i class="bi bi-bell-slash fs-1 text-muted d-block mb-2"></i>
+                <h5 class="fw-bold">No Notifications</h5>
+                <p class="text-muted small mb-0">You're all caught up! Smart alerts and claim updates will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

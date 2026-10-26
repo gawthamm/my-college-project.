@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Claims - Campus Smart Lost & Found{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Campus Ownership Claims</h3>
+            <p class="text-muted small mb-0">Review student proof submissions and authorize item custody releases</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Status Tabs / Filters -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="{{ url_for('admin_claims_list') }}" class="btn btn-sm {% if current_status == 'all' or not current_status %}btn-primary{% else %}btn-light border{% endif %} rounded-pill px-3">
+            All Claims ({{ claims|length }})
+        </a>
+        <a href="{{ url_for('admin_claims_list', status='pending') }}" class="btn btn-sm {% if current_status == 'pending' %}btn-warning text-dark fw-bold{% else %}btn-light border{% endif %} rounded-pill px-3">
+            Pending Review
+        </a>
+        <a href="{{ url_for('admin_claims_list', status='approved') }}" class="btn btn-sm {% if current_status == 'approved' %}btn-success text-white fw-bold{% else %}btn-light border{% endif %} rounded-pill px-3">
+            Approved
+        </a>
+        <a href="{{ url_for('admin_claims_list', status='rejected') }}" class="btn btn-sm {% if current_status == 'rejected' %}btn-danger text-white fw-bold{% else %}btn-light border{% endif %} rounded-pill px-3">
+            Rejected
+        </a>
+    </div>
+
+    <!-- Claims Table -->
+    <div class="card card-custom border-0 shadow-sm p-4 bg-white">
+        {% if claims %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Claim ID</th>
+                        <th>Item</th>
+                        <th>Claimant Student</th>
+                        <th>Submitted Proof</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>AI Assessment</th>
+                        <th>Review Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in claims %}
+                    <tr>
+                        <td class="fw-bold">#CLM-{{ c.id }}</td>
+                        <td>
+                            <strong class="text-dark d-block text-truncate" style="max-width: 180px;">{{ c.item_title }}</strong>
+                            <small class="text-muted">{{ c.storage_location or 'Security Office' }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ c.claimant_name }}</strong>
+                            <span class="d-block text-muted">{{ c.claimant_student_id }} &bull; {{ c.claimant_dept or 'Campus' }}</span>
+                            <a href="tel:{{ c.contact_number }}" class="text-success text-decoration-none small fw-semibold"><i class="bi bi-telephone-fill me-1"></i>{{ c.contact_number }}</a>
+                        </td>
+                        <td class="text-truncate" style="max-width: 180px;" title="{{ c.proof_description }}">
+                            {{ c.proof_description }}
+                            {% if c.evidence_type %}
+                            <div class="badge bg-light text-secondary border mt-1" style="font-size: 0.68rem;">{{ c.evidence_type }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ c.created_at }}</td>
+                        <td>
+                            <span class="badge {% if c.status == 'approved' %}bg-success{% elif c.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %} text-uppercase">
+                                {{ c.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if c.claim_match_score %}
+                                <span class="badge {% if c.ai_recommendation == 'Recommend Approval' %}bg-success{% elif c.ai_recommendation == 'Requires Admin Investigation' %}bg-warning text-dark{% else %}bg-danger{% endif %} text-uppercase mb-1" style="font-size:0.68rem;">
+                                    {{ c.ai_recommendation }}
+                                </span>
+                                <div class="small fw-bold text-dark">{{ c.claim_match_score }}% Match</div>
+                            {% else %}
+                                <span class="text-muted small">Standard Review</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('review_claim', claim_id=c.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1">
+                                Review &amp; Verify
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+            No claims found under this status.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

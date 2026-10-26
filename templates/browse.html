@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Lost & Found Items - Campus Smart Lost & Found{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Browse Campus Belongings</h3>
+            <p class="text-muted small mb-0">Search and filter active reports across all campus departments</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('report_item', type='lost') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-circle me-1"></i> Report Lost
+            </a>
+            <a href="{{ url_for('report_item', type='found') }}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-circle me-1"></i> Report Found
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="card card-custom p-3 mb-4 bg-white border-0 shadow-sm">
+        <form method="GET" action="{{ url_for('browse') }}" class="row g-2 align-items-center">
+            <!-- Keyword Search -->
+            <div class="col-lg-4 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="e.g. Find red bag lost in computer lab..." value="{{ search_query }}">
+                </div>
+            </div>
+
+            <!-- Type Filter -->
+            <div class="col-lg-2 col-6">
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="lost" {% if current_type == 'lost' %}selected{% endif %}>Lost Items</option>
+                    <option value="found" {% if current_type == 'found' %}selected{% endif %}>Found Items</option>
+                </select>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="col-lg-3 col-6">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if current_category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-lg-2 col-6">
+                <select name="status" class="form-select">
+                    <option value="open" {% if current_status == 'open' %}selected{% endif %}>Open Only</option>
+                    <option value="claimed" {% if current_status == 'claimed' %}selected{% endif %}>Claimed</option>
+                    <option value="returned" {% if current_status == 'returned' %}selected{% endif %}>Returned</option>
+                    <option value="" {% if not current_status %}selected{% endif %}>All Statuses</option>
+                </select>
+            </div>
+
+            <!-- Submit Button & Reset -->
+            <div class="col-lg-1 col-6 d-flex gap-1">
+                <button type="submit" class="btn btn-primary w-100" title="Apply Filters"><i class="bi bi-funnel"></i></button>
+                <a href="{{ url_for('browse') }}" class="btn btn-light border text-muted" title="Reset Filters"><i class="bi bi-arrow-clockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Natural Language Search Intelligence Feedback Bar -->
+    {% if parsed_nl and nl_applied and parsed_nl.extracted_entities %}
+    <div class="alert alert-primary bg-primary bg-opacity-10 border-primary border-opacity-25 rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center flex-wrap gap-1">
+            <span class="badge bg-primary text-white me-2 py-1 px-2"><i class="bi bi-cpu me-1"></i>Natural Language Search</span>
+            {% for ent_type, ent_val in parsed_nl.extracted_entities %}
+            <span class="nl-chip"><strong>{{ ent_type }}:</strong>&nbsp;{{ ent_val }}</span>
+            {% endfor %}
+        </div>
+        <a href="{{ url_for('browse') }}" class="btn btn-sm btn-link text-decoration-none text-muted p-0 small">Reset to default query</a>
+    </div>
+    {% endif %}
+
+    <!-- Active Filters Pill Display -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">
+            Found <strong>{{ items|length }}</strong> item(s) matching your criteria
+        </span>
+    </div>
+
+    <!-- Items Grid -->
+    {% if items %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for item in items %}
+        <div class="col">
+            <div class="card card-custom h-100 d-flex flex-column">
+                <div class="item-card-img-wrapper">
+                    <!-- Item Type Badge -->
+                    {% if item.item_type == 'lost' %}
+                        <span class="item-badge-floating badge-lost">Lost</span>
+                    {% else %}
+                        <span class="item-badge-floating badge-found">Found</span>
+                    {% endif %}
+
+                    <!-- Status Pill (if not open) -->
+                    {% if item.status == 'claimed' %}
+                        <span class="badge badge-claimed position-absolute top-0 end-0 m-2 z-2">Claimed</span>
+                    {% elif item.status == 'returned' %}
+                        <span class="badge badge-returned position-absolute top-0 end-0 m-2 z-2">Returned</span>
+                    {% endif %}
+
+                    <img src="{{ url_for('static', filename='uploads/' + item.image_filename) }}" 
+                         alt="{{ item.title }}" 
+                         class="item-card-img"
+                         onerror="this.src='{{ url_for('static', filename='uploads/default_item.svg') }}'">
+                </div>
+
+                <div class="card-body p-3 d-flex flex-column flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-secondary border small">
+                            <i class="bi {{ item.category_icon }} me-1"></i>{{ item.category_name }}
+                        </span>
+                        <small class="text-muted" style="font-size: 0.78rem;">
+                            <i class="bi bi-calendar3 me-1"></i>{{ item.event_date }}
+                        </small>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-1 text-truncate" title="{{ item.title }}">{{ item.title }}</h6>
+                    <p class="text-muted small mb-2" style="font-size: 0.85rem; height: 38px; overflow:hidden;">
+                        {{ item.description }}
+                    </p>
+
+                    <div class="mt-auto pt-2 border-top">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <small class="text-muted text-truncate" style="max-width: 60%;" title="{{ item.location }}">
+                                <i class="bi bi-geo-alt me-1 text-primary"></i>{{ item.location }}
+                            </small>
+                            <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1">
+                                View &amp; Match
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="card card-custom p-5 text-center bg-white border-0 my-4">
+        <div class="mx-auto mb-3 p-3 rounded-circle bg-light text-muted" style="width: 70px; height: 70px; display:flex; align-items:center; justify-content:center;">
+            <i class="bi bi-search fs-2"></i>
+        </div>
+        <h5 class="fw-bold">No Items Found</h5>
+        <p class="text-muted small max-w-md mx-auto mb-4">
+            No items matched your current filter combinations. Try clearing search keywords or filter by different categories.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('browse') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">Reset All Filters</a>
+            <a href="{{ url_for('report_item') }}" class="btn btn-primary btn-sm rounded-pill px-3">Report a New Item</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

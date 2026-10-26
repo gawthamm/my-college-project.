@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Handover Receipt #{{ receipt.receipt_token }} - Campus Security{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Top Action Bar (Hidden in Print) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 btn-print-hide max-w-xl mx-auto" style="max-width: 680px;">
+        <a href="{{ url_for('admin_dashboard') if session.get('user_role') == 'admin' else url_for('my_items') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
+                <i class="bi bi-printer me-1"></i> Print / Save PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Official Printable Receipt Certificate -->
+    <div class="receipt-container">
+        <div class="watermark-returned">RETURNED</div>
+
+        <!-- University Security Header -->
+        <div class="text-center border-bottom pb-4 mb-4">
+            <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-2">
+                <i class="bi bi-shield-check fs-1"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-0 text-uppercase tracking-wider">Campus Security Department</h4>
+            <p class="text-muted small mb-1">Official Lost &amp; Found Custody &amp; Handover Certificate</p>
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill fw-bold">
+                <i class="bi bi-check-circle-fill me-1"></i> VERIFIED &amp; RETURNED TO OWNER
+            </span>
+        </div>
+
+        <!-- Receipt Token & Date -->
+        <div class="row g-2 mb-4 p-3 bg-light rounded-3 small">
+            <div class="col-sm-6">
+                <span class="text-muted">Receipt Token ID:</span><br>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="fw-bold text-primary fs-6">{{ receipt.receipt_token }}</code>
+                    <button class="btn btn-sm btn-link p-0 text-decoration-none btn-print-hide" onclick="copyToClipboard('{{ receipt.receipt_token }}', this)" title="Copy token">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <span class="text-muted">Date &amp; Time of Handover:</span><br>
+                <strong class="text-dark">{{ receipt.returned_date }}</strong>
+            </div>
+        </div>
+
+        <!-- Item Specifications -->
+        <h6 class="fw-bold text-dark mb-2 text-uppercase small"><i class="bi bi-box-seam me-1 text-primary"></i> Restored Belonging</h6>
+        <div class="p-3 border rounded-3 mb-4 bg-white">
+            <h5 class="fw-bold text-dark mb-1">{{ receipt.item_title }}</h5>
+            <p class="text-muted small mb-2">{{ receipt.item_desc }}</p>
+            <div class="row g-2 small text-secondary">
+                <div class="col-6"><strong>Found Spot:</strong> {{ receipt.item_location }}</div>
+                <div class="col-6"><strong>Original Date:</strong> {{ receipt.event_date }}</div>
+            </div>
+        </div>
+
+        <!-- Two Parties: Finder / Custodian and Receiving Owner -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark mb-2 text-uppercase small"><i class="bi bi-person-fill me-1 text-primary"></i> Finder / Depositor</h6>
+                <div class="p-3 border rounded-3 bg-white small h-100">
+                    <div class="mb-1"><strong>Full Name:</strong> {{ receipt.finder_name }}</div>
+                    <div class="mb-1"><strong>Campus ID:</strong> {{ receipt.finder_student_id }}</div>
+                    <div class="mb-1"><strong>Mobile Phone:</strong> <a href="tel:{{ receipt.finder_phone }}" class="text-decoration-none text-success fw-bold">{{ receipt.finder_phone }}</a></div>
+                    <div class="mb-0"><strong>Email:</strong> {{ receipt.finder_email }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark mb-2 text-uppercase small"><i class="bi bi-person-check-fill me-1 text-success"></i> Receiver (Claimant)</h6>
+                <div class="p-3 border rounded-3 bg-white small h-100">
+                    <div class="mb-1"><strong>Full Name:</strong> {{ receipt.owner_name }}</div>
+                    <div class="mb-1"><strong>Student / Roll ID:</strong> {{ receipt.owner_student_id }}</div>
+                    <div class="mb-1"><strong>Mobile Phone:</strong> <a href="tel:{{ receipt.owner_phone }}" class="text-decoration-none text-success fw-bold">{{ receipt.owner_phone }}</a></div>
+                    <div class="mb-0"><strong>Department:</strong> {{ receipt.owner_dept or 'Campus Member' }}</div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="p-2 px-3 border rounded-3 bg-light small">
+                    <strong>Stated Ownership Proof:</strong> <span class="text-muted">{{ receipt.proof_description }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Sign-off -->
+        <h6 class="fw-bold text-dark mb-2 text-uppercase small"><i class="bi bi-pen me-1 text-secondary"></i> Security Verification &amp; Custody Release</h6>
+        <div class="p-3 border rounded-3 mb-4 bg-white small">
+            <div class="row g-2">
+                <div class="col-6"><strong>Handed Over By:</strong> {{ receipt.admin_name }} (Campus Security)</div>
+                <div class="col-6"><strong>Verification Method:</strong> {{ receipt.verification_method }}</div>
+                <div class="col-12 mt-2">
+                    <strong>Custodian Remarks:</strong> {{ receipt.remarks or 'Item released in satisfactory condition.' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Signatures Row -->
+        <div class="row pt-4 mt-4 border-top text-center small text-muted">
+            <div class="col-6">
+                <div class="border-bottom pb-4 mb-2 mx-auto" style="max-width: 200px;"></div>
+                <strong>Student / Owner Signature</strong>
+            </div>
+            <div class="col-6">
+                <div class="border-bottom pb-4 mb-2 mx-auto" style="max-width: 200px;"></div>
+                <strong>Security Officer Seal &amp; Signature</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

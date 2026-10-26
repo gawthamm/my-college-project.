@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Campus Smart Lost & Found{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="p-5 bg-white rounded-4 shadow-sm border max-w-md mx-auto" style="max-width: 500px;">
+        <div class="mb-3 text-danger">
+            <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+        </div>
+        <h2 class="fw-bold">500 - Internal Server Error</h2>
+        <p class="text-muted small mb-4">Something went wrong while processing your request. Please try again or return to the home screen.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-house-door me-1"></i> Return Home
+        </a>
+    </div>
+</div>
+{% endblock %}

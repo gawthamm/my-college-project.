@@ -1,0 +1,606 @@
+/* =========================================================
+   CAMPUS SMART LOST & FOUND SYSTEM - CUSTOM STYLES
+   ========================================================= */
+
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary: #0ea5e9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #0f172a;
+  --dark-surface: #1e293b;
+  --light-surface: #ffffff;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%);
+  --border-color: #e2e8f0;
+  --text-muted: #64748b;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  --card-hover-shadow: 0 20px 30px -10px rgba(79, 70, 229, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-gradient);
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* ---------------- Navbar Styling ---------------- */
+.navbar-campus {
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.85rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+}
+
+.navbar-brand-badge {
+  background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+  color: white;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.nav-link {
+  font-weight: 500;
+  color: #cbd5e1 !important;
+  padding: 0.5rem 0.9rem !important;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------- Hero Section ---------------- */
+.hero-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e293b 100%);
+  color: white;
+  padding: 4.5rem 0 4rem;
+  border-radius: 0 0 2.5rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.3);
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+}
+
+/* ---------------- Campus Security Network Widget ---------------- */
+.security-network-card {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+}
+
+.security-feature-item {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  transition: all 0.2s ease;
+  color: #f8fafc;
+}
+
+.security-feature-item:hover {
+  background: rgba(30, 41, 59, 0.98) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-2px);
+}
+
+.security-live-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.security-check-input {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.security-check-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.security-check-input:focus {
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* ---------------- Cards & Surfaces ---------------- */
+.card-custom {
+  background: var(--light-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.card-custom:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.item-card-img-wrapper {
+  position: relative;
+  height: 210px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.item-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.card-custom:hover .item-card-img {
+  transform: scale(1.05);
+}
+
+.item-badge-floating {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Status & Type Badges */
+.badge-lost {
+  background-color: #ef4444;
+  color: white;
+}
+
+.badge-found {
+  background-color: #10b981;
+  color: white;
+}
+
+.badge-claimed {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.badge-returned {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* ---------------- Smart Match Badge ---------------- */
+.match-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  padding: 0.35rem 0.8rem;
+  border-radius: 50rem;
+  font-size: 0.82rem;
+}
+
+.match-high {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  animation: pulse-soft 2s infinite;
+}
+
+.match-moderate {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.match-low {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes pulse-soft {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ---------------- Buttons & Inputs ---------------- */
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 600;
+  border-radius: 0.75rem;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.form-control, .form-select {
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  padding: 0.65rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+}
+
+/* ---------------- Statistics KPI Box ---------------- */
+.stat-box {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.stat-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+
+/* ---------------- Receipt & Printable ---------------- */
+.receipt-container {
+  max-width: 680px;
+  margin: 2rem auto;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  border: 2px dashed #94a3b8;
+  box-shadow: var(--card-shadow);
+  position: relative;
+}
+
+.watermark-returned {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: rgba(16, 185, 129, 0.12);
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+  .navbar, .footer, .btn-print-hide, .breadcrumb {
+    display: none !important;
+  }
+  .receipt-container {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ---------------- Footer ---------------- */
+.footer-campus {
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 2.5rem 0 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ---------------- AI Chatbot Assistant Widget (CampusBot) ---------------- */
+.campusbot-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+  color: white;
+  border: none;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  cursor: pointer;
+  z-index: 1050;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.campusbot-fab:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.55);
+}
+
+.campusbot-fab .fab-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #10b981;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+}
+
+.campusbot-window {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  height: 520px;
+  max-height: calc(100vh - 120px);
+  background: #ffffff;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 1050;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom right;
+}
+
+.campusbot-window.d-none {
+  display: none !important;
+}
+
+.campusbot-header {
+  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+  color: white;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.campusbot-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-wrap: break-word;
+}
+
+.chat-bubble-bot {
+  align-self: flex-start;
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-bottom-left-radius: 0.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  color: white;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.chat-quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.quick-reply-btn {
+  font-size: 0.75rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quick-reply-btn:hover {
+  background: #4f46e5;
+  color: white;
+}
+
+.chat-item-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.chat-item-card:hover {
+  border-color: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.chat-input-bar {
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ---------------- Item Recovery Stepper ---------------- */
+.recovery-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+
+.recovery-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+  min-width: 65px;
+}
+
+.recovery-step .step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  margin-bottom: 0.4rem;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.recovery-step.completed .step-circle {
+  background: linear-gradient(135deg, #10b981, #0ea5e9);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.recovery-step .step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.recovery-step.completed .step-label {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.recovery-step .step-desc {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.step-line {
+  flex: 1;
+  height: 3px;
+  background: #e2e8f0;
+  margin: 0 6px 20px 6px;
+  z-index: 1;
+}
+
+.step-line.active {
+  background: linear-gradient(90deg, #10b981, #0ea5e9);
+}
+
+/* ---------------- Natural Language Entity Chips ---------------- */
+.nl-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: #4f46e5;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-right: 0.35rem;
+  margin-bottom: 0.35rem;
+}

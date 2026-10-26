@@ -1,0 +1,536 @@
+{% extends "base.html" %}
+
+{% block title %}Campus Security Admin Dashboard - Campus Smart Lost & Found{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js CDN for Analytics Visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">Campus Security Authority</span>
+                <span class="badge bg-dark text-light px-2 py-1 small"><i class="bi bi-database me-1"></i> Engine: {{ db_engine }}</span>
+            </div>
+            <h2 class="fw-bold text-dark mb-0">Security Command Dashboard</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin_claims_list') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-card-checklist me-1"></i> All Claims ({{ stats.total_claims }})
+            </a>
+            <a href="{{ url_for('report_item', type='found') }}" class="btn btn-success btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-circle me-1"></i> Log Found Item
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-primary">{{ stats.total_items }}</h4>
+                    <span class="text-muted small">Total Reports</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-danger">{{ stats.lost_items }}</h4>
+                    <span class="text-muted small">Active Lost</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-success">{{ stats.found_items }}</h4>
+                    <span class="text-muted small">Found &amp; Custody</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-warning">{{ stats.pending_claims }}</h4>
+                    <span class="text-muted small">Claims Pending</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-info">{{ stats.returned_items }}</h4>
+                    <span class="text-muted small">Handed Over</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="stat-box p-3">
+                <div>
+                    <h4 class="fw-bold mb-0 text-dark">{{ stats.resolution_rate }}%</h4>
+                    <span class="text-muted small">Recovery Rate</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics & Intelligence Row 1: Monthly Recovery Stats & Frequent Categories -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card card-custom p-4 bg-white border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-graph-up-arrow text-success me-2"></i>Monthly Recovery Statistics
+                        </h5>
+                        <small class="text-muted">Trend of returned belongings handed over to verified owners</small>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill">
+                        {{ stats.returned_items }} Total Recoveries
+                    </span>
+                </div>
+                <div style="height: 240px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card card-custom p-4 bg-white border-0 shadow-sm h-100">
+                <h5 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-bar-chart-fill text-danger me-2"></i>Frequently Lost Categories
+                </h5>
+                <p class="text-muted small mb-3">Highest frequency reported lost items on campus</p>
+                
+                {% if stats.frequent_lost_cats %}
+                <div class="d-flex flex-column gap-3">
+                    {% for cat in stats.frequent_lost_cats %}
+                    {% set pct = ((cat.lost_count / stats.lost_items * 100)|round(1)) if stats.lost_items > 0 else 0 %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1 small">
+                            <span class="fw-bold text-dark">{{ cat.name }}</span>
+                            <span class="text-muted"><strong>{{ cat.lost_count }}</strong> reports ({{ pct }}%)</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ pct }}%;" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted small">
+                    <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+                    No active lost items logged.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Security & Fraud Risk Alerts Banner -->
+    <div class="card card-custom border-0 shadow-sm p-4 bg-white mb-4 border-start border-4 {% if suspicious_alerts %}border-danger{% else %}border-success{% endif %}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock-fill {% if suspicious_alerts %}text-danger{% else %}text-success{% endif %}"></i> 
+                Security Fraud Risk &amp; Suspicious Claim Detection
+            </h5>
+            {% if suspicious_alerts %}
+            <span class="badge bg-danger rounded-pill px-3 py-1">{{ suspicious_alerts|length }} Flagged for Review</span>
+            {% else %}
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill">
+                <i class="bi bi-check-circle me-1"></i> Clean Security Status
+            </span>
+            {% endif %}
+        </div>
+        <p class="text-muted small mb-3">
+            Algorithmic surveillance scanning for repeated rejections, cross-category guesswork, or anomalous claiming behavior.
+            <em>Flagged for manual administrator review rather than automatic restrictions.</em>
+        </p>
+
+        {% if suspicious_alerts %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Risk Level</th>
+                        <th>Student Name &amp; ID</th>
+                        <th>Alert Reason</th>
+                        <th>Recommended Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sa in suspicious_alerts %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if sa.risk_level == 'High' %}bg-danger{% else %}bg-warning text-dark{% endif %} text-uppercase">
+                                {{ sa.risk_level }} Risk
+                            </span>
+                        </td>
+                        <td>
+                            <strong class="text-dark">{{ sa.full_name }}</strong>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ sa.student_id }} &bull; {{ sa.email }}</div>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-danger">{{ sa.alert_type }}</span>
+                            <div class="text-muted" style="font-size: 0.75rem;">{{ sa.description }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">Inspect Proof In Person</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-3 bg-light rounded-3 text-muted small d-flex align-items-center gap-2">
+            <i class="bi bi-shield-check text-success fs-5"></i>
+            <div>All recent claims comply with campus security verification baselines. No fraudulent attempts detected.</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AI Duplicate Report Detection Section -->
+    {% if duplicate_groups %}
+    <div class="card card-custom border-0 shadow-sm p-4 bg-white mb-4 border-start border-4 border-warning">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-files text-warning"></i> AI-Based Duplicate Report Detection
+            </h5>
+            <span class="badge bg-warning text-dark rounded-pill">{{ duplicate_groups|length }} Clusters Detected</span>
+        </div>
+        <p class="text-muted small mb-3">
+            Multiple students may have reported the same physical item at the same location. Review potential duplicates to keep campus listings organized.
+        </p>
+
+        <div class="d-flex flex-column gap-3">
+            {% for dg in duplicate_groups %}
+            <div class="p-3 rounded-3 border bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong class="text-dark">Primary Report: #{{ dg.primary.id }} - {{ dg.primary.title }}</strong>
+                    <span class="badge bg-secondary text-uppercase">{{ dg.primary.item_type }}</span>
+                </div>
+                <div class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ dg.primary.location }} &bull; Reported: {{ dg.primary.event_date }}</div>
+                
+                <div class="bg-white p-2 rounded-2 border">
+                    <div class="small fw-bold text-warning-emphasis mb-1">Potential Duplicates:</div>
+                    {% for d in dg.duplicates %}
+                    <div class="d-flex justify-content-between align-items-center small py-1 border-bottom">
+                        <div>
+                            <span class="fw-semibold">#{{ d.id }} - {{ d.title }}</span>
+                            <span class="text-muted ms-2">({{ d.reasons|join(', ') }})</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-warning text-dark me-2">{{ d.duplicate_score }}% Match</span>
+                            <a href="{{ url_for('item_detail', item_id=d.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;">View</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts & Analytics Row 2: Category Breakdown & Pending Claims -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card card-custom p-4 bg-white border-0 shadow-sm h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Overall Category Breakdown</h5>
+                <div style="height: 250px;" class="d-flex align-items-center justify-content-center">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <!-- Pending Claims Needing Immediate Verification -->
+            <div class="card card-custom p-4 bg-white border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-shield-exclamation text-warning me-2"></i>Pending Ownership Claims
+                        </h5>
+                        <small class="text-muted">Verify student proof against physical found item inventory</small>
+                    </div>
+                    <span class="badge bg-warning text-dark">{{ claims|length }} Pending</span>
+                </div>
+
+                {% if claims %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item</th>
+                                <th>Claimant</th>
+                                <th>Storage Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in claims %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-dark d-block text-truncate" style="max-width: 180px;">{{ c.item_title }}</span>
+                                    <span class="text-muted" style="font-size:0.75rem;"><i class="bi bi-geo-alt"></i> {{ c.location }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ c.claimant_name }}</strong>
+                                    <span class="d-block text-muted" style="font-size:0.75rem;">{{ c.claimant_student_id }}</span>
+                                </td>
+                                <td class="text-success small fw-semibold">
+                                    {{ c.storage_location or 'Security Office' }}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('review_claim', claim_id=c.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1">
+                                        Verify Claim &rarr;
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-check-circle-fill fs-2 text-success d-block mb-2"></i>
+                    All submitted ownership claims have been reviewed!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items Table -->
+    <div class="card card-custom p-4 bg-white border-0 shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-task me-2 text-primary"></i>Recent Campus Reports</h5>
+            <a href="{{ url_for('browse') }}" class="small text-primary text-decoration-none fw-semibold">View All Items &rarr;</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Reported By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for it in items %}
+                    <tr>
+                        <td class="fw-bold">#{{ it.id }}</td>
+                        <td>
+                            <span class="badge {% if it.item_type == 'lost' %}badge-lost{% else %}badge-found{% endif %}">
+                                {{ it.item_type|upper }}
+                            </span>
+                        </td>
+                        <td class="fw-semibold text-dark">{{ it.title }}</td>
+                        <td><i class="bi {{ it.category_icon }} me-1 text-muted"></i>{{ it.category_name }}</td>
+                        <td>{{ it.location }}</td>
+                        <td>{{ it.reporter_name }}</td>
+                        <td>{{ it.event_date }}</td>
+                        <td>
+                            <span class="badge {% if it.status == 'open' %}bg-secondary{% elif it.status == 'claimed' %}bg-warning text-dark{% elif it.status == 'returned' %}bg-success{% else %}bg-dark{% endif %}">
+                                {{ it.status|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('item_detail', item_id=it.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Official Returns / Handover Receipts Log -->
+    <div class="card card-custom p-4 bg-white border-0 shadow-sm">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-receipt-cutoff me-2 text-success"></i>Official Handover &amp; Return Logs</h5>
+        {% if returns %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Receipt Token</th>
+                        <th>Item</th>
+                        <th>Rightful Owner</th>
+                        <th>Handed Over By</th>
+                        <th>Date &amp; Time</th>
+                        <th>Receipt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in returns %}
+                    <tr>
+                        <td><code class="fw-bold text-primary">{{ r.receipt_token }}</code></td>
+                        <td class="fw-semibold">{{ r.item_title }}</td>
+                        <td>{{ r.owner_name }}</td>
+                        <td>{{ r.admin_name }}</td>
+                        <td>{{ r.returned_date }}</td>
+                        <td>
+                            <a href="{{ url_for('view_receipt', token=r.receipt_token) }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0">
+                                <i class="bi bi-printer me-1"></i> Print
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No item returns recorded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Security Audit Trail & Verification Logs -->
+    <div class="card card-custom p-4 bg-white border-0 shadow-sm mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-journal-shield me-2 text-primary"></i>Security Audit Trail &amp; Verification Logs
+                </h5>
+                <small class="text-muted">Immutable log of claim submissions, administrative decisions, and handovers</small>
+            </div>
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1 rounded-pill">
+                {{ audit_logs|length if audit_logs else 0 }} Recent Entries
+            </span>
+        </div>
+
+        {% if audit_logs %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                        <th>Initiated By</th>
+                        <th>Item / Claim</th>
+                        <th>Details &amp; Decision Remarks</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in audit_logs %}
+                    <tr>
+                        <td class="text-muted" style="font-size:0.75rem;">{{ a.created_at }}</td>
+                        <td>
+                            <span class="badge {% if 'Approved' in a.action or 'Completed' in a.action %}bg-success{% elif 'Rejected' in a.action %}bg-danger{% elif 'Claim' in a.action %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase" style="font-size: 0.72rem;">
+                                {{ a.action }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ a.user_name or 'System' }}</strong>
+                            {% if a.user_student_id %}
+                            <div class="text-muted" style="font-size: 0.72rem;">{{ a.user_student_id }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.item_id %}Item #{{ a.item_id }}{% endif %}
+                            {% if a.claim_id %}<span class="text-muted">(Claim #{{ a.claim_id }})</span>{% endif %}
+                        </td>
+                        <td class="text-truncate" style="max-width: 280px;" title="{{ a.details }}">
+                            {{ a.details }}
+                        </td>
+                        <td><code class="text-secondary small">{{ a.ip_address or '127.0.0.1' }}</code></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No security audit logs recorded yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const labels = {{ stats.category_chart_labels|tojson }};
+    const data = {{ stats.category_chart_data|tojson }};
+    
+    const ctx = document.getElementById('categoryChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', 
+                        '#ef4444', '#8b5cf6', '#ec4899'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Monthly Recovery Statistics Chart
+    const monthlyLabels = {{ stats.monthly_labels|tojson }};
+    const monthlyData = {{ stats.monthly_data|tojson }};
+    const mCtx = document.getElementById('monthlyChart');
+    if (mCtx) {
+        new Chart(mCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Handed Over Recoveries',
+                    data: monthlyData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#10b981',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
